@@ -2,23 +2,27 @@ import discord
 from discord.ext import commands
 
 bot = commands.Bot(command_prefix=';')
-token = 'null'
 
 
-@bot.event
-async def on_ready():
-    print('We have logged in as {0.user}'.format(bot))
+class RunBot:
+    def __init__(self, token):
+        self.token = token
 
+    @bot.event()
+    async def on_ready(self):
+        print('We have logged in as {0.user}'.format(bot))
 
-@bot.event
-async def on_message(message):
-    curmessage = message.content.lower()
+    @bot.event
+    async def on_message(self, message):
+        curmessage = message.content.lower()
 
-    if "hello" in curmessage and message.author != bot.user:
-        await message.channel.send('Hello!')
-        print("sent hello!")
+        if "hello" in curmessage and message.author != bot.user:
+            await message.channel.send('Hello!')
+            print("sent hello!")
 
+    @bot.command()
+    async def test(self, ctx, arg):
+        print('hi')
 
-bot.run(token)
-
-
+    async def runbot(self):
+        bot.run(self.token)
