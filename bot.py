@@ -6,7 +6,7 @@ client_credentials_manager = SpotifyClientCredentials()
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 bot = commands.Bot(command_prefix=';', case_insensitive=True)
 
-token = 'insert'
+token = 'null'
 
 
 @bot.event
