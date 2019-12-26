@@ -35,6 +35,123 @@ async def status(ctx):
     print("Sent status with returned latency of {0}".format(latency))
 
 
+def get_artist(name):
+    results = sp.search(q='artist:' + name, type='artist')
+    items = results['artists']['items']
+    if len(items) > 0:
+        return items[0]
+    else:
+        return None
+
+
+# return artist info for specified artist
+@bot.command()
+async def info(ctx, *, args):  # * allows us to pass multiple parameters w/o having to worry
+    # about the exact number of params passed
+
+    artist = get_artist(args)
+    name = artist['name']
+    artist = artist['external_urls']['spotify']
+    await ctx.send("Here's the Spotify Page for: **" + name + "** \n" + artist + "\n Would you "
+                   + "like to see more info about **" + name + "**?")
+
+
+def get_uri(artist):
+    return artist['uri']
+
+
+# returns the number of followers and Spotify popularity score for a specified artist
+@bot.command()
+async def popularity(ctx, *, args):
+    artist = get_artist(args)
+    name = artist['name']
+    await ctx.send("Popularity Statistics on **" + name + "**: \n*Followers*: " + '{:,}'.format(
+        artist['followers']['total']) + "\n*Popularity*: " + str(artist['popularity']) + "/100")
+
+
+# returns the 5 most recent albums released by a specified artist
+@bot.command()
+async def albums(ctx, *, args):
+    artist = get_artist(args)
+    name = artist['name']
+    uri = get_uri(artist)
+    return_string = "Here are the 5 most recent albums released by **" + name + "**: \n"
+
+    for i in range(6):
+        album = sp.artist_albums(artist_id=uri, limit=1, offset=i)
+        cur = album['items'][0]['name'] + " - " + album['items'][0]['external_urls']['spotify']
+        return_string += cur
+        return_string += "\n \n"
+    await ctx.send(return_string)
+
+
+# returns the cover art for a specified song album
+@bot.command()
+async def art(ctx, *, args):
+    cur = sp.search(q='album:' + args, type='album')
+    await ctx.send(cur['albums']['items'][0]['images'][0]['url'])
+
+
+# returns the portrait of a specified artist on spotify
+@bot.command()
+async def portrait(ctx, *, args):
+    artist = get_artist(args)
+    await ctx.send(artist['images'][0]['url'])
+
+
+# return album link
+@bot.command()
+async def album(ctx, *, args):
+    album_links = sp.search(q='album:' + args, type='album')
+    await ctx.send(album_links['albums']['items'][0]['external_urls']['spotify'])
+
+
+@bot.command()
+async def preview(ctx, *, args):
+    song = sp.search(q='track:' + args, type='track')
+    await ctx.send(song['tracks']['items'][0]['external_urls']['spotify'])
+
+
+@bot.command()
+async def stats(ctx, arg1, *, args):
+    if arg1 == 'track':
+        query = sp.search(q='track:' + args, type='track')['tracks']['items'][0]
+        await ctx.send("Artist: **" + query['artists'][0]['name'] + "**\n" +
+                       "Release Date for **" + query['name'] + "**: " + format_date(query['album'][
+                                                                                        'release_date']) + "\nPopularity: **" + str(
+            query['popularity']) + "/100**"
+                                   "\nAlbum Art: " + query['album']['images'][0][
+                           'url'] + "\nLink: " + query[
+                           'external_urls']['spotify'])
+    elif arg1 == 'artist':
+        await ctx.send("Use the `;popularity` command instead!")
+    elif arg1 == 'album':
+        print(arg1)
+    else:
+        await ctx.send('Invalid query. Make sure you use track, artist, or album when using '
+                       '`;stats`!')
+
+
+months = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
+          "October", "November", "December"]
+
+
+def format_date(date):
+    temp = ""
+    for x in range(len(date)):
+        if date[x] == '-':
+            temp += ' '
+        else:
+            temp += date[x]
+    num_dates = [int(s) for s in temp.split() if s.isdigit()]
+
+    return str(months[num_dates[1] % 12 - 1]) + " " + str(num_dates[2]) + ", " + str(num_dates[0])
+
+
+bot.run(token)
+
+# To Do:
+
 # help command, returns a list of all commands with their description
 
 
@@ -66,106 +183,8 @@ async def status(ctx):
 
 # shuffle queue command
 
-def get_artist(name):
-    results = sp.search(q='artist:' + name, type='artist')
-    items = results['artists']['items']
-    if len(items) > 0:
-        return items[0]
-    else:
-        return None
-
-
-# return artist info of
-@bot.command()
-async def info(ctx, *, args):  # * allows us to pass multiple parameters w/o having to worry
-    # about the exact number of params passed
-
-    artist = get_artist(args)
-    uri = get_uri(artist)
-    name = artist['name']
-    artist = artist['external_urls']['spotify']
-    await ctx.send("Here's the Spotify Page for: **" + name + "** \n" + artist + "\n Would you "
-                                                                                 "like to see "
-                                                                                 "more info "
-                                                                                 "about **" + name
-                   + "**?")
-    await ctx.send(uri)
-
-
 # join current voice channel command
 
 # leave current voice channel command
 
 # clear queue command
-
-
-def get_uri(artist):
-    return artist['uri']
-
-
-@bot.command()
-async def popularity(ctx, *, args):
-    artist = get_artist(args)
-    name = artist['name']
-    print(artist)
-    await ctx.send("Popularity Statics on **" + name + "**: \n*Followers*: " + '{:,}'.format(artist[
-                                                                                                'followers'][
-                                                                                                 'total']))
-
-
-@bot.command()
-async def albums(ctx, *, args):
-    artist = get_artist(args)
-    name = artist['name']
-    uri = get_uri(artist)
-    return_string = "Here are the 5 most recent albums released by **" + name + "**: \n"
-
-    for i in range(6):
-        album = sp.artist_albums(artist_id=uri, limit=1, offset=i)
-        cur = album['items'][0]['name'] + " - " + album['items'][0]['external_urls']['spotify']
-        return_string += cur
-        return_string += "\n \n"
-    await ctx.send(return_string)
-
-
-# returns the cover art for a specified song album
-@bot.command()
-async def art(ctx, *, args):
-    album = sp.search(q='album:' + args, type='album')
-    await ctx.send(album['albums']['items'][0]['images'][0]['url'])
-
-
-# returns the portrait of a specified artist on spotify
-@bot.command()
-async def portrait(ctx, *, args):
-    artist = get_artist(args)
-    await ctx.send(artist['images'][0]['url'])
-
-
-# return album link
-@bot.command()
-async def album(ctx, *, args):
-    album_links = sp.search(q='album:' + args, type='album')
-    await ctx.send(album_links['albums']['items'][0]['external_urls']['spotify'])
-
-
-@bot.command()
-async def preview(ctx, *, args):
-    song = sp.search(q='track:' + args, type='track')
-    await ctx.send(song['tracks']['items'][0]['external_urls']['spotify'])
-
-
-@bot.command()
-async def stats(ctx, arg1, *, args):
-    if arg1 == 'track':
-        print(arg1)
-    elif arg1 == 'artist':
-        await ctx.send("Use the `;popularity` command instead!")
-    elif arg1 == 'album':
-        print(arg1)
-    else:
-        await ctx.send('Invalid query. Make sure you use track, artist, or album when using '
-                       '`;stats`!')
-
-
-bot.run(token)
