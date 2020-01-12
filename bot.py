@@ -7,14 +7,8 @@ client_credentials_manager = SpotifyClientCredentials()
 sp = spotipy.Spotify(client_credentials_manager=client_credentials_manager)
 bot = commands.Bot(command_prefix=';', case_insensitive=True)
 
-token = ''
-
-
-@bot.event
-async def on_ready():
-    print('We have logged in as {0.user}'.format(bot))
-    activity = discord.Activity(name='트와이스 | ;help', type=discord.ActivityType.listening)
-    await bot.change_presence(activity=activity)
+token = 'null'
+bot.remove_command('help')
 
 
 # parses messages to see if a user's message contains 'hello' in it and if it does, replies with
@@ -37,7 +31,7 @@ async def status(ctx):
     await ctx.send("Encore is up and running! **Latency: {0}**".format(latency))
     print("Sent status with returned latency of {0}".format(latency))
 
-
+# function that shortens the process of getting the Spotify URI key for a specified artist
 def get_artist(name):
     results = sp.search(q='artist:' + name, type='artist')
     items = results['artists']['items']
@@ -107,24 +101,22 @@ async def album(ctx, *, args):
     album_links = sp.search(q='album:' + args, type='album')
     await ctx.send(album_links['albums']['items'][0]['external_urls']['spotify'])
 
-
+# return 30 second preview of a specified song
 @bot.command()
 async def preview(ctx, *, args):
     song = sp.search(q='track:' + args, type='track')
     await ctx.send(song['tracks']['items'][0]['external_urls']['spotify'])
 
-
+# return statistics on a song, artist, or album
 @bot.command()
 async def stats(ctx, arg1, *, args):
     if arg1 == 'track':
         query = sp.search(q='track:' + args, type='track')['tracks']['items'][0]
         await ctx.send("Artist: **" + query['artists'][0]['name'] + "**\n" +
-                       "Release Date for **" + query['name'] + "**: " + format_date(query['album']
-                                                                                    [
-                                                                                        'release_date']) + "\nPopularity: " + str(
-            query['popularity']) + "/100"
-                       + "\nAlbum Art: " + query['album']['images'][0]['url'] + "\nLink: "
-                       + query['external_urls']['spotify'])
+                       "Release Date for **" + query['name'] + "**: " +
+                       format_date(query['album']['release_date']) + "\nPopularity: " +
+                       str(query['popularity']) + "/100" + "\nAlbum Art: " + query['album'][
+                           'images'][0]['url'] + "\nLink: " + query['external_urls']['spotify'])
     elif arg1 == 'artist':
         await ctx.send("Use the `;popularity` command instead!")
     elif arg1 == 'album':
@@ -137,7 +129,7 @@ async def stats(ctx, arg1, *, args):
 months = ["January", "February", "March", "April", "May", "June", "July", "August", "September",
           "October", "November", "December"]
 
-
+# function that formats Spotify dates from DD/MM/YYYY to MM/DD/YYYY
 def format_date(date):
     temp = ""
     for x in range(len(date)):
@@ -152,58 +144,28 @@ def format_date(date):
 
 commands = {'status': "Returns whether or not the bot is online as well as the latency",
             'info': "Returns the Spotify page for a specified artist", 'popularity': "Returns the "
-            "Spotify popularity metric for a specified artist", 'albums': "Sends the 5 most "
-            "recent albums released by a specified artist ", 'art': "Sends the album cover/art "
-            "for a specified album", 'portrait': "Returns the Spotify cover image "
-            "for a specified artist", 'album': "Sends a link to a specified album", 'preview':
-            "Sends a 30 second preview/Spotify link for a specified song", 'stats': "Returns "
-            "Spotify generated statistics on a specified track"}
+            "Spotify popularity metric for a specified artist",
+            'albums': "Sends the 5 most recent albums released by a specified artist ",
+            'art': "Sends the album cover/art for a specified album",
+            'portrait': "Returns the Spotify cover image for a specified artist",
+            'album': "Sends a link to a specified album",
+            'preview': "Sends a 30 second preview/Spotify link for a specified song",
+            'stats': "Returns Spotify generated statistics on a specified track"}
 
-
+# defines the help command
 @bot.command()
-async def support(ctx):
+async def help(ctx):
     cur = "Here are all of the commands for Encore!\n"
     for key, value in commands.items():
         cur += "`" + key + "` - " + value + "\n"
     await ctx.send(cur)
 
+# set bot status
+@bot.event
+async def on_ready():
+    print('We have logged in as {0.user}'.format(bot))
+    activity = discord.Activity(name='트와이스 | ;help', type=discord.ActivityType.listening)
+    await bot.change_presence(activity=activity)
+
+
 bot.run(token)
-
-# To Do:
-
-# help command, returns a list of all commands with their description
-
-
-# finish last once all commands are finished
-
-
-# play command
-
-
-# queue command
-
-# loop playlist command
-
-# loop song command
-
-# now playing command
-
-# artist command
-
-# artist -> view overview, related, and about command
-
-# artist -> overview/top 5 songs command
-
-# artist -> related artists command
-
-# artist -> about/biography command
-
-# pause command
-
-# shuffle queue command
-
-# join current voice channel command
-
-# leave current voice channel command
-
-# clear queue command
