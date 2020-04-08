@@ -164,7 +164,7 @@ async def help(ctx):
 @bot.event
 async def on_ready():
     print('We have logged in as {0.user}'.format(bot))
-    activity = discord.Activity(name='| ;help', type=discord.ActivityType.listening)
+    activity = discord.Activity(name='Listening to 트와이스|;help', type=discord.ActivityType.listening)
     await bot.change_presence(activity=activity)
 
 
